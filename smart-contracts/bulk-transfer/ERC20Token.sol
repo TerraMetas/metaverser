@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.7;
 
-
 /**
  * @dev Interface of the ERC20 standard as defined in the EIP.
  */
@@ -477,4 +476,3 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
         uint256 amount
     ) internal virtual {}
 }
-

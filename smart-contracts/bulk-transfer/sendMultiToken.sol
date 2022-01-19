@@ -8,10 +8,9 @@ contract sendMultiToken  {
     mapping(address=> uint256) ReceiverMap ;
     uint256 totalReceiver ;
     constructor(address tokenerc20){
-        
+
         MTVToken = ERC20(tokenerc20) ;
         totalReceiver = 0;
-
     }
     function transferToken(address[] memory addr ,uint256 amount) public {
         for (uint8 i=0;i<addr.length ; i++) {
