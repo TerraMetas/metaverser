@@ -10,8 +10,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract DepositingTeamTokens is Ownable {
     ERC20 internal MTVToken ;
     address OwnerWallet;
-    uint256 public limitStack;
-    uint256 public totalVestingAmount;
+    uint256 public tokenPoolLimit;
+    uint256 public totalDepositAmount;
     uint256 public Part1Time;
     uint256 public Part1Percent;
     uint256 public Part2Time;
@@ -22,7 +22,7 @@ contract DepositingTeamTokens is Ownable {
     bool public Pause ;
     
 
-    struct DepositData {
+    struct DepositStruct {
         uint256 time;
         uint256 amount;
         uint256 claim_time;
@@ -35,7 +35,7 @@ contract DepositingTeamTokens is Ownable {
 
 
     }
-    mapping ( address => DepositData ) private  vestingAddress;
+    mapping ( address => DepositStruct ) private  DepositUserdata;
     mapping (address => history[]) private userHistory;
     //mapping (uint256 => uint256) public totalStructs;
 
@@ -44,38 +44,38 @@ contract DepositingTeamTokens is Ownable {
         Part1Time = 1666656000; //set exit time 
         Part2Time = 1671062400; //set exit time
         Part3Time = 1684886400; //set exit time
-        Part1Percent = 1;
+        Part1Percent = 0;
         Part2Percent = 3;
-        Part3Percent = 96;
-        numOfMonth = 24 ;
+        Part3Percent = 100;
+        numOfMonth = 12 ;
         MTVToken = ERC20(MTVTAddress) ;
         OwnerWallet = msg.sender;
-        limitStack = 1000000000000 ether ; // Vesting Limit Token  
-        totalVestingAmount = 0; 
+        tokenPoolLimit = 1000000000000 ether ; // Deposit Limit Token  
+        totalDepositAmount = 0; 
         Pause = false;
     }
     modifier onlyUser(address _sender) {
-        require(vestingAddress[_sender].time > 0, "User does not exist");
+        require(DepositUserdata[_sender].time > 0, "User does not exist");
         _;
     }
     function depositToken(address _user,uint256 _amount)  public  onlyOwner   {
-        require(!Pause,"Vesting is Paused by owner");
-        require(getVestingIsNotFull(0) ,"Vesting Pool is full" );
-        require(getVestingIsNotFull(_amount) ,"Vesting will be filled once your request is submitted" );
-        uint256 totalAmount = vestingAddress[_user].amount + _amount ;
+        require(!Pause,"Contract is Paused by owner");
+        require(getPoolIsNotFull(0) ,"Deposit pool is full" );
+        require(getPoolIsNotFull(_amount) ,"Deposit pool will be filled once your request is submitted" );
+        uint256 totalAmount = DepositUserdata[_user].amount + _amount ;
         
-        if(vestingAddress[_user].amount == 0) {
-           vestingAddress[_user]=DepositData(block.timestamp , totalAmount,0,0);
+        if(DepositUserdata[_user].amount == 0) {
+           DepositUserdata[_user]=DepositStruct(block.timestamp , totalAmount,0,0);
         }else {
-            vestingAddress[_user].amount = totalAmount ;
+            DepositUserdata[_user].amount = totalAmount ;
         }
         
 
-        totalVestingAmount = totalVestingAmount + _amount  ; // for fixing big decimal numbers add numOfMonth / 10 ** 18 token to user
+        totalDepositAmount = totalDepositAmount + _amount  ; // for fixing big decimal numbers add numOfMonth / 10 ** 18 token to user
         userHistory[_user].push(history(1,block.timestamp,totalAmount) );
         MTVToken.transferFrom(OwnerWallet , address(this),  _amount  );
 
-        emit VestingEvent(_user,_amount);
+        emit DepositingEvent(_user,_amount);
 
     }
     function claimToken(uint256 _amount) public onlyUser(msg.sender){
@@ -84,12 +84,12 @@ contract DepositingTeamTokens is Ownable {
         require(totalToken >= _amount   , "Not Enough Receivable Token At This Time" );
         userHistory[msg.sender].push(history(2,block.timestamp,_amount) );
         MTVToken.transfer(msg.sender,_amount);
-        vestingAddress[msg.sender].claim_amount = vestingAddress[msg.sender].claim_amount + _amount;
+        DepositUserdata[msg.sender].claim_amount = DepositUserdata[msg.sender].claim_amount + _amount;
     }
 
     //getter
-    function getVestingIsNotFull(uint256 _amount) public view returns(bool){
-        return totalVestingAmount + _amount <= limitStack  ;
+    function getPoolIsNotFull(uint256 _amount) public view returns(bool){
+        return totalDepositAmount + _amount <= tokenPoolLimit  ;
     }
     function getReceivableToken(address _player) public view returns(uint256){
         uint256 totalToken=0;
@@ -107,7 +107,7 @@ contract DepositingTeamTokens is Ownable {
                 totalToken =   (calcMonth * oneSliceOfPart3 ) + totalToken  ; //for fixing decimal numbers add token with formula 1 / 10 ** 18
             }
         }
-        totalToken = totalToken -  vestingAddress[_player].claim_amount;
+        totalToken = totalToken -  DepositUserdata[_player].claim_amount;
         return totalToken;
     }
     function getOneSliceOfPart3(address _player) public view returns(uint256){
@@ -130,13 +130,13 @@ contract DepositingTeamTokens is Ownable {
 
     }
     function getBalance(address _player) public view onlyUser(_player) returns(uint256) {  
-        return vestingAddress[_player].amount;
+        return DepositUserdata[_player].amount;
     }
     function getClimed(address _player) public view onlyUser(_player) returns(uint256) {  
-        return vestingAddress[_player].claim_amount;
+        return DepositUserdata[_player].claim_amount;
     }
     function getTimeStamp(address _player) public view  returns(uint256)  {
-        return vestingAddress[_player].time ;
+        return DepositUserdata[_player].time ;
     }
     function getUserHistory(address _user) public view returns(history[] memory )  {
         history[] memory allUserHistory = new history[](userHistory[_user].length);
@@ -155,10 +155,10 @@ contract DepositingTeamTokens is Ownable {
         OwnerWallet = _newOwner ; 
     }
 
-    event VestingEvent(address _sender,uint256 _amount);
+    event DepositingEvent(address _sender,uint256 _amount);
     event ExitEvent(address _sender,uint256 _amount);  
     event WithdrawEvent(address _sender,uint256 _amount);  
     event ClaimEvent(address _sender,uint256 _amount);
-    event VestingLimitChange(uint256 _amount);
+    event PoolLimitChange(uint256 _amount);
 
 }
