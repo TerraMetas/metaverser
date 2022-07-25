@@ -9,4 +9,4 @@ Pay Monthly 1/12 of tokens, from 3 Month after deposit
 
 ## deployed on test network:
 
-https://testnet.bscscan.com/address/0x7760A894D3F8Dd5B1B906B71BEd7dCC16759B3DA
+https://testnet.bscscan.com/address/0xE4fF416741cD932D3d140629E7a42adC8eB262F4
