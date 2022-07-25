@@ -40,7 +40,7 @@ contract DepositingPrivateSale is Ownable {
 
     constructor (address MTVTAddress) {
 
-        periodTime = 600 ;// 2592000;
+        periodTime =  2592000;
         numOfMonth = 12 ;
         MTVToken = ERC20(MTVTAddress) ;
         tokenPoolLimit = 1000000000000 ether ; // Deposit Limit Token  
@@ -53,7 +53,7 @@ contract DepositingPrivateSale is Ownable {
     }
 
     //operate
-    function depositToken(uint256 _amount)  public    {
+    function depositToken(uint256 _amount)  public {
         require(!Pause,"Contract is Paused by owner");
         require(getPoolIsNotFull(0) ,"Deposit pool is full" );
         require(getPoolIsNotFull(_amount) ,"Deposit pool will be filled once your request is submitted" );
@@ -64,15 +64,14 @@ contract DepositingPrivateSale is Ownable {
             DepositUserdata[msg.sender].amount = totalAmount ;
         }
         
-
         totalDepositAmount = totalDepositAmount + _amount  ; // for fixing big decimal numbers add numOfMonth / 10 ** 18 token to user
         userHistory[msg.sender].push(HistoryStruct(1,block.timestamp,totalAmount) );
         WalletArray.push(msg.sender);
         MTVToken.transferFrom(msg.sender , address(this),  _amount  );
 
         emit DepositingEvent(msg.sender,_amount);
-
     }
+    
     function claimToken(uint256 _amount) public onlyUser(msg.sender){
         require(!Pause,'Market is Paused by owner');
         uint256 totalToken = getReceivableToken(msg.sender);
@@ -144,9 +143,13 @@ contract DepositingPrivateSale is Ownable {
         return allUserHistory;
 
     }
-    function getAllUsers() public view returns (UserStruct[] memory) {
+    function getAllUsers(uint16 _from,uint16 _to) public view returns (UserStruct[] memory) {
+        require(_from<_to , '_from must be smaller than _to');
+        if(_to > WalletArray.length) {
+            _to = uint16(WalletArray.length);
+        }
         UserStruct[] memory result = new UserStruct[](WalletArray.length);
-        for (uint16 i; i < WalletArray.length; i++) {
+        for (uint16 i = _from; i <_to ; i++) {
             address user = WalletArray[i];
             result[i] = UserStruct(user, getBalance(user), getTimeStamp(user));
         }
