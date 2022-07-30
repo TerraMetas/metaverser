@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+pragma solidity 0.8.7;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
@@ -13,8 +13,6 @@ contract DepositingPrivateSale is Ownable {
     uint256 public totalDepositAmount;
     uint256 private periodTime ; //30 days in second
     uint8 private numOfMonth ; 
-    bool public Pause ;
-    
 
     struct DepositStruct {
         uint256 time;
@@ -45,7 +43,6 @@ contract DepositingPrivateSale is Ownable {
         MTVToken = ERC20(MTVTAddress) ;
         tokenPoolLimit = 1000000000000 ether ; // Deposit Limit Token  
         totalDepositAmount = 0; 
-        Pause = false;
     }
     modifier onlyUser(address _sender) {
         require(DepositUserdata[_sender].time > 0, "User does not exist");
@@ -54,7 +51,6 @@ contract DepositingPrivateSale is Ownable {
 
     //operate
     function depositToken(uint256 _amount)  public {
-        require(!Pause,"Contract is Paused by owner");
         require(getPoolIsNotFull(0) ,"Deposit pool is full" );
         require(getPoolIsNotFull(_amount) ,"Deposit pool will be filled once your request is submitted" );
         uint256 totalAmount = DepositUserdata[msg.sender].amount + _amount ;
@@ -73,18 +69,12 @@ contract DepositingPrivateSale is Ownable {
     }
     
     function claimToken(uint256 _amount) public onlyUser(msg.sender){
-        require(!Pause,'Market is Paused by owner');
         uint256 totalToken = getReceivableToken(msg.sender);
         require(totalToken >= _amount   , "Not Enough Receivable Token At This Time" );
         userHistory[msg.sender].push(HistoryStruct(2,block.timestamp,_amount) );
         MTVToken.transfer(msg.sender,_amount);
         DepositUserdata[msg.sender].claim_amount = DepositUserdata[msg.sender].claim_amount + _amount;
     }
-    //Setter
-    function setPause(bool _pause) public onlyOwner{
-         Pause = _pause;
-    }
-
 
     //getter
     function getPoolIsNotFull(uint256 _amount) public view returns(bool) {
