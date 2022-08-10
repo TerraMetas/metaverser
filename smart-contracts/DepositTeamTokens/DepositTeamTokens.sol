@@ -41,7 +41,7 @@ contract DepositingTeamTokens is Ownable {
 
     constructor (address MTVTAddress) {
 
-        Part1Time = 1666656000; //set exit time 
+        Part1Time = 1667980800; //set exit time 
         Part2Time = 1671062400; //set exit time
         Part3Time = 1684886400; //set exit time
         Part1Percent = 0;
