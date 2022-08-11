@@ -44,10 +44,10 @@ contract DepositingTeamTokens is Ownable {
         Part1Time = 1667980800; //set exit time 
         Part2Time = 1671062400; //set exit time
         Part3Time = 1684886400; //set exit time
-        Part1Percent = 0;
+        Part1Percent = 1;
         Part2Percent = 3;
-        Part3Percent = 100;
-        numOfMonth = 12 ;
+        Part3Percent = 96;
+        numOfMonth = 24 ;
         MTVToken = ERC20(MTVTAddress) ;
         OwnerWallet = msg.sender;
         tokenPoolLimit = 1000000000000 ether ; // Deposit Limit Token  
