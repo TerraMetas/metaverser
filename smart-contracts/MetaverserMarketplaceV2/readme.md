@@ -4,4 +4,4 @@
 
 This contract is used to buy and sell Lands NFT.
 
-https://bscscan.com/address/0x9D57a543E647dbdcd2ABa31Aec294D2cDb4Cee2c
+https://bscscan.com/address/0x0fafd8e9b27d35457407061c1847b9edf5657723
